@@ -1,243 +1,177 @@
-Contextual Bandit Learning: Exploration and Exploitation with Context
-=====================================================================
+# Contextual Bandit Learning: Exploration and Exploitation with Context
 
-Contents
---------
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![NumPy](https://img.shields.io/badge/Library-NumPy-013243)
+![Pandas](https://img.shields.io/badge/Library-Pandas-150458)
+![Status](https://img.shields.io/badge/Status-Research_POC-orange)
 
-*   Introduction
-    
-*   Overview
-    
-    *   Contextual Bandit Framework
-        
-    *   Exploration vs Exploitation Dilemma
-        
-    *   Algorithms Overview
-        
-*   Implementation
-    
-    *   Environment Setup
-        
-    *   Algorithm Implementations
-        
-    *   Visualization and Analysis
-        
-*   Results
-    
-    *   Performance Comparison
-        
-    *   Arm Selection Behavior
-        
-    *   Feature Importance Analysis
-        
-*   Applications
-    
-*   Conclusion
-    
-*   References
-    
+> **Master of Engineering in Information Technology**
+> **Frankfurt University of Applied Sciences**
+> **Author:** Manoj Hanumanthu (RegNo. 1566325)
 
-Introduction
-------------
+## 📋 Table of Contents
+1. [Project Overview](#-project-overview)
+2. [The Contextual Bandit Problem](#-the-contextual-bandit-problem)
+3. [Algorithms Implemented](#-algorithms-implemented)
+4. [Simulation & Methodology](#-simulation--methodology)
+5. [Performance Analysis](#-performance-analysis)
+6. [Installation & Usage](#-installation--usage)
+7. [Visualizations](#-visualizations)
+8. [References](#-references)
 
-Contextual bandit learning represents a powerful approach that bridges supervised learning and reinforcement learning by incorporating contextual information into decision-making processes. Unlike traditional multi-armed bandit problems, contextual bandits utilize side information (context) to make more informed decisions, enabling personalized and adaptive strategies in real-world applications.
+---
 
-This project implements and compares three prominent contextual bandit algorithms—ε-Greedy, Linear Upper Confidence Bound (UCB), and Thompson Sampling—in a simulated environment. Through comprehensive experimentation and visualization, we analyze how each algorithm balances the fundamental exploration-exploitation trade-off and examine their performance in terms of cumulative regret, learning efficiency, and adaptation to contextual cues.
+## 📄 Project Overview
 
-The implementation provides a transparent, educational foundation for understanding contextual bandit learning, with practical applications in recommendation systems, dynamic pricing, clinical decision support, and online adaptive interventions.
+In the era of big data, decision-making systems must intelligently adapt to specific situational cues. [cite_start]Whether choosing a video on a streaming platform or selecting a treatment in a medical system, decisions must be made with **context** in mind[cite: 33, 34].
 
-Overview
---------
+[cite_start]This project implements and compares three popular algorithms—**ε-Greedy**, **Linear UCB**, and **Thompson Sampling**—to solve the "Exploration-Exploitation Dilemma" under context-dependent rewards[cite: 26]. [cite_start]Using a simulated environment with binary contextual features, we analyze how each algorithm balances exploring new actions versus exploiting known rewards to minimize cumulative regret[cite: 27].
 
-### Contextual Bandit Framework
+**Key Findings:**
+* [cite_start]**ε-Greedy:** A simple baseline that struggles with dynamic learning due to static exploration[cite: 28].
+* [cite_start]**Linear UCB:** Provides the most consistent learning efficiency and lowest regret[cite: 28].
+* [cite_start]**Thompson Sampling:** Allows for adaptive exploration via Bayesian methods but is sensitive to stochastic variability[cite: 28].
 
-The contextual bandit framework extends the classic multi-armed bandit problem by incorporating contextual information that influences reward distributions. At each round:
+---
 
-*   The environment provides a context vector (e.g., user features, time of day)
-    
-*   The agent selects an action (arm) based on the current context
-    
-*   A reward is observed for the chosen context-action pair
-    
-*   The agent updates its policy using this feedback
-    
+## 🎯 The Contextual Bandit Problem
 
-This iterative process enables the system to learn optimal actions for different contexts over time, making it particularly valuable for personalized decision-making.
 
-### Exploration vs Exploitation Dilemma
+[cite_start]Unlike traditional Multi-Armed Bandits (MAB) which assume a stationary environment, Contextual Bandits receive a **context vector** ($x_t$) before selecting an action[cite: 37, 39].
 
-The core challenge in contextual bandit learning is balancing:
+### Mathematical Formulation
+The goal is to maximize total reward (or minimize regret) over time.
+* **Context ($x_t$):** Observed features (e.g., user attributes).
+* **Action ($a_t$):** The arm chosen by the agent.
+* **Reward ($r_t$):** The feedback received, which depends on both context and action.
 
-*   **Exploitation**: Choosing actions known to yield high rewards based on current knowledge
-    
-*   **Exploration**: Trying less-known actions to gather information that might lead to better long-term outcomes
-    
+The objective is to minimize **Cumulative Regret** ($R_T$):
+$$R_T = \sum_{t=1}^{T} (E[r_t^{a^*}|x_t] - E[r_t^a|x_t])$$
+[cite_start]Where $a^*$ is the optimal action for context $x_t$[cite: 139].
 
-An effective algorithm must navigate this trade-off intelligently, especially when dealing with high-dimensional or noisy context data.
+---
 
-### Algorithms Overview
+## 🧠 Algorithms Implemented
 
-This project implements and compares three fundamental algorithms:
+### 1. ε-Greedy (Epsilon-Greedy)
+[cite_start]An intuitive method that mostly exploits the best-known action but explores randomly with a small probability $\epsilon$[cite: 50].
+* **Mechanism:** Estimates rewards using linear models. [cite_start]With probability $1-\epsilon$, it chooses the best action; with probability $\epsilon$, it chooses a random action[cite: 168, 169].
+* [cite_start]**Limitation:** It lacks a mechanism to estimate confidence, leading to inefficient exploration in complex contexts[cite: 179].
 
-*   **ε-Greedy**: Simple baseline that exploits most of the time but explores randomly with probability ε
-    
-*   **Linear UCB**: Principled approach that uses confidence bounds to guide exploration
-    
-*   **Thompson Sampling**: Bayesian method that samples from posterior distributions to manage uncertainty
-    
+### 2. Linear Upper Confidence Bound (Linear UCB)
+A principled approach based on "optimism in the face of uncertainty." [cite_start]It maintains confidence intervals for rewards and selects actions based on the upper end of this interval[cite: 52].
+* **Selection Rule:**
+    $$a_t = \text{argmax}_a (x_t^\top \hat{\theta}_a + \alpha \sqrt{x_t^\top A_a^{-1} x_t})$$
+* [cite_start]**Strength:** Naturally shifts from exploration to exploitation as uncertainty decreases[cite: 203].
 
-Each algorithm represents a distinct philosophical approach to the exploration-exploitation dilemma, with different theoretical guarantees and practical implications.
+### 3. Thompson Sampling
+[cite_start]A Bayesian approach that maintains a posterior distribution of reward parameters for each arm[cite: 54].
+* [cite_start]**Mechanism:** It samples parameters from the posterior and chooses the arm with the highest expected reward based on that sample[cite: 223].
+* [cite_start]**Strength:** Exploration is guided probabilistically by uncertainty[cite: 226].
 
-Implementation
---------------
+---
 
-### Environment Setup
+## ⚙️ Simulation & Methodology
 
-The simulation environment generates synthetic context vectors and implements a linear reward model with Gaussian noise:
+[cite_start]We developed a **Toy Dataset** to emulate real-world decision-making (e.g., ads, clinical diagnostics)[cite: 240].
 
-    def create_environment(n_rounds=500, n_features=2, n_arms=3, noise=0.1):
-    # Generate random binary contexts
-    contexts = np.random.randint(0, 2, (n_rounds, n_features))
-    
-    Define true reward weights (hidden from algorithms)
-    weights = np.array([
-        [0.7, 0.3],  # Arm 0 weights
-        [0.4, 0.6],  # Arm 1 weights
-        [0.2, 0.8]   # Arm 2 weights
-    ])
-    
-    # Calculate true rewards (linear combination + noise)
-    true_rewards = np.dot(contexts, weights.T) + np.random.normal(0, noise, (n_rounds, n_arms))
-    
-    return contexts, true_rewards`
+### Dataset Setup
+* [cite_start]**Contexts:** Sampled from a fixed-dimensional space (5-10 dimensions)[cite: 244].
+* **Reward Model:** Linear function with Gaussian noise.
+    $$r_t^a = x_t^\top \theta_a + \eta_t$$
+    [cite_start]Where $\eta_t \sim N(0, \sigma^2)$ represents noise[cite: 255].
+* [cite_start]**Arm-Reward Matrix:** Predefined weight vectors $\theta_a$ serve as the "ground truth" to calculate optimal regret[cite: 260].
 
-### Algorithm Implementations
+### Exploration Parameters
+| Algorithm | Parameter | Role | Impact |
+| :--- | :--- | :--- | :--- |
+| **ε-Greedy** | $\epsilon$ (Epsilon) | Random exploration rate | [cite_start]High $\epsilon$ delays convergence; low $\epsilon$ exploits too early[cite: 391]. |
+| **Linear UCB** | $\alpha$ (Alpha) | Confidence scaling | [cite_start]Tuned to $\alpha=1.0$ for balanced convergence[cite: 372]. |
+| **Thompson Sampling** | Prior, $\sigma^2$ | Bayesian mechanism | [cite_start]Sensitive to noise estimation[cite: 391]. |
 
-#### ε-Greedy Algorithm
+---
 
-    def epsilon_greedy(contexts, true_rewards, epsilon=0.1):
-    # Algorithm implementation
-    if np.random.rand() < epsilon:
-        chosen_arm = np.random.choice(n_arms)  # Explore
-    else:
-        chosen_arm = np.argmax(predicted)     # Exploit
-    # Update estimates and track metrics`
+## 📊 Performance Analysis
 
-#### Linear UCB Algorithm
+We evaluated the algorithms over thousands of rounds. [cite_start]The results highlight the "Performance-Simplicity Trade-off"[cite: 30].
 
-    def linear_ucb(contexts, true_rewards, alpha=0.5):
-    # UCB implementation
-    uncertainty = alpha * np.sqrt(context @ A_inv @ context)
-    ucb = theta @ context + uncertainty
-    # Update model and track metrics`
+### 1. Cumulative Regret Comparison
+Linear UCB achieved the lowest cumulative regret, indicating it learned the optimal strategy fastest.
 
-#### Thompson Sampling
+| Algorithm | Final Cumulative Regret | Assessment |
+| :--- | :--- | :--- |
+| **ε-Greedy** | ~2.1 | [cite_start]Suboptimal due to fixed exploration[cite: 440]. |
+| **Linear UCB** | **~1.5** | [cite_start]**Best Performance.** Efficient learning via confidence bounds[cite: 440]. |
+| **Thompson Sampling** | ~2.6 | [cite_start]Good adaptive behavior but sensitive to priors[cite: 440]. |
 
-    def thompson_sampling(contexts, true_rewards):
-    # Thompson Sampling implementation
-    sampled_vals = [np.random.multivariate_normal(mu[a], cov[a]) for a in range(n_arms)]
-    theta_vals = [s @ context for s in sampled_vals]
-    # Bayesian update and tracking `
+### 2. Total Reward Accumulated
+Consistent with regret metrics, Linear UCB maximized the total reward collected.
 
-### Visualization and Analysis
+| Algorithm | Total Reward |
+| :--- | :--- |
+| ε-Greedy | [cite_start]4.1 [cite: 521] |
+| **Linear UCB** | [cite_start]**4.8** [cite: 521] |
+| Thompson Sampling | [cite_start]3.8 [cite: 521] |
 
-The implementation includes comprehensive visualization functions:
+### 3. Feature Importance (Interpretability)
+Using linear regression approximation, we analyzed which context features drove decisions.
+* [cite_start]**Feature 1:** Weight ~0.57 (Primary driver)[cite: 545].
+* [cite_start]**Feature 2:** Weight ~0.43 (Secondary driver)[cite: 547].
+[cite_start]This transparency is crucial for applications in healthcare and finance[cite: 514].
 
-*   Cumulative regret comparison across algorithms
-    
-*   Arm selection behavior over time
-    
-*   Feature importance analysis
-    
-*   PDF report generation for results documentation
-    
+---
 
-Results
--------
+## 💻 Installation & Usage
 
-### Performance Comparison
+### Prerequisites
+* Python 3.x
+* Libraries: `numpy`, `pandas`, `matplotlib`
 
-Based on our experiments with 500 rounds of simulation:
+### Running the Code
+1.  **Clone the Repository:**
+    ```bash
+    git clone [https://github.com/Hanumanthumanoj01/Contextual-Bandit-Learning.git](https://github.com/Hanumanthumanoj01/Contextual-Bandit-Learning.git)
+    cd Contextual-Bandit-Learning/POC
+    ```
 
-| **Algorithm**         | **Total Reward** | **Cumulative Regret** | **Strengths**                             | **Limitations**                          |
-|-----------------------|------------------|------------------------|-------------------------------------------|------------------------------------------|
-| ε-Greedy              | 4.1              | ~2.1                   | Simple, intuitive                         | Fixed exploration, non-adaptive          |
-| Linear UCB            | 4.8              | ~1.5                   | Theoretical guarantees, efficient         | Computationally heavy                    |
-| Thompson Sampling     | 3.8              | ~2.6                   | Adaptive, Bayesian                        | Sensitive to priors                      |
+2.  **Install Dependencies:**
+    ```bash
+    pip install numpy pandas matplotlib
+    ```
 
+3.  **Run the Simulation:**
+    *(Note: Replace `main.py` with the actual entry point of your script if different)*
+    ```bash
+    python main.py
+    ```
+
+---
+
+## 📈 Visualizations
+
+### Cumulative Regret
+*Comparison of how algorithms minimize regret over time.*
+> *[Insert Fig 7 from report: Cumulative Regret Comparison on Toy Dataset]*
+> *Linear UCB (Orange) flattens out fastest, indicating convergence.*
 
 ### Arm Selection Behavior
+*How algorithms shift from exploration to exploitation.*
+> *[Insert Fig 8 from report: Arm Selection Behavior]*
+> *Linear UCB rapidly converges to the optimal arm (Arm 0), while ε-Greedy continues to have noise.*
 
-The arm selection patterns reveal distinct exploration strategies:
+### Feature Importance
+*The weight of different context features in decision making.*
+> *[Insert Fig 9 from report: Context Feature Importance]*
 
-*   **ε-Greedy**: Shows consistent random exploration throughout the simulation
-    
-*   **Linear UCB**: Rapidly converges to optimal arms as confidence bounds tighten
-    
-*   **Thompson Sampling**: Exhibits probabilistic exploration that decreases over time
-    
+---
 
-### Feature Importance Analysis
+## 📚 References
 
-Feature importance analysis using linear regression revealed:
+1.  [cite_start]J. Zheng et al., “Neural Contextual Combinatorial Bandit under Non-stationary Environment,” IEEE ICDM, 2023. [cite: 635]
+2.  [cite_start]Z. Qu et al., “Context-Aware Online Client Selection,” IEEE TPDS, 2022. [cite: 636]
+3.  [cite_start]C. Wang et al., “Adaptive Noise Exploration for Neural Contextual Multi-Armed Bandits,” Algorithms, 2025. [cite: 638]
+4.  [cite_start]J. Y. Wang et al., “Identifying general reaction conditions by bandit optimization,” Nature, 2024. [cite: 654]
+5.  [cite_start]A. Sekhari et al., “Contextual Bandits and Imitation Learning with Preference-Based Active Queries”. [cite: 669]
 
-*   Feature 1 contributed approximately 57% to reward prediction
-    
-*   Feature 2 contributed approximately 43% to reward prediction
-    
-
-This analysis provides transparency into which contextual features most influence decision-making, which is crucial for interpretability in sensitive applications.
-
-Applications
-------------
-
-Contextual bandit algorithms have numerous real-world applications:
-
-*   **Personalized Recommendations**: Adapting content based on user context
-    
-*   **Dynamic Pricing**: Adjusting prices based on market conditions and customer attributes
-    
-*   **Clinical Decision Support**: Tailoring treatments based on patient characteristics
-    
-*   **Online Advertising**: Selecting ads based on user demographics and behavior
-    
-*   **Adaptive Educational Systems**: Personalizing learning content based on student performance
-    
-
-Conclusion
-----------
-
-This project implemented and compared three contextual bandit algorithms—ε-Greedy, Linear UCB, and Thompson Sampling—using a simulated environment with binary contextual features. Our findings demonstrate that:
-
-*   Linear UCB achieved the best performance in terms of cumulative reward and regret, benefiting from its principled approach to uncertainty estimation
-    
-*   Thompson Sampling showed adaptive exploration capabilities but was sensitive to prior specifications
-    
-*   ε-Greedy served as a simple baseline but lacked adaptability due to its fixed exploration rate
-    
-
-The feature importance analysis provided valuable insights into which contextual features drove decisions, enhancing interpretability—a critical consideration in domains like healthcare and finance.
-
-For future work, we recommend:
-
-*   Extending to deep contextual bandits using neural networks for complex, non-linear relationships
-    
-*   Implementing adaptive exploration parameters that adjust to non-stationary environments
-    
-*   Testing on real-world datasets to evaluate robustness and scalability
-    
-
-This implementation provides a solid foundation for understanding, implementing, and comparing contextual bandit strategies in both educational and practical contexts.
-
-References
-----------
-
-1.  L. Li, W. Chu, J. Langford, and R. E. Schapire, "A contextual-bandit approach to personalized news article recommendation" (2010)
-    
-2.  S. Agrawal and N. Goyal, "Thompson Sampling for Contextual Bandits with Linear Payoffs" (2013)
-    
-3.  Y. Abbasi-Yadkori, D. Pál, and C. Szepesvári, "Improved algorithms for linear stochastic bandits" (2011)
-    
-4.  O. Chapelle and L. Li, "An empirical evaluation of thompson sampling" (2011)
-    
-5.  A. Slivkins, "Contextual bandits with similarity information" (2014)
+---
+*Disclaimer: This POC uses a synthetic toy dataset to demonstrate algorithmic behaviors. Real-world performance may vary based on data sparsity and noise levels.*
